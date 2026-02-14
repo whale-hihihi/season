@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>信封祝福</title>
+    <!-- Tailwind CSS v3 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <!-- 配置Tailwind -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    animation: {
+                        'swing': 'swing 2s ease-in-out infinite',
+                        'spin-slow': 'spin 3s linear infinite',
+                        'float': 'float 3s ease-in-out infinite',
+                        'fade-in': 'fadeIn 0.5s ease-in-out'
+                    },
+                    keyframes: {
+                        swing: {
+                            '0%, 100%': { transform: 'rotate(-3deg)' },
+                            '50%': { transform: 'rotate(3deg)' }
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' }
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' }
+                        }
+                    },
+                    fontFamily: {
+                        'handwritten': ['"Ma Shan Zheng"', 'cursive']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- 自定义样式 -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .text-shadow {
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            }
+            .letter-bg {
+                background-image: linear-gradient(to right, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.8));
+            }
+            .envelope-shadow {
+                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            }
+        }
+    </style>
+    <!-- 引入Google字体 -->
+    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
+</head>
+<body class="min-h-screen flex flex-col relative overflow-hidden" style="background-image: url('mainbody.jpg'); background-size: cover; background-position: center; background-attachment: fixed;">
+    <!-- 音乐控制图标 -->
+    <div id="record-container" class="absolute top-4 right-4 z-50 cursor-pointer">
+        <div id="record" class="w-16 h-16 flex items-center justify-center animate-spin-slow">
+            <img src="xiong.jpg" alt="音乐控制" class="w-full h-full object-cover rounded-full">
+        </div>
+        <!-- 音符 -->
+        <div class="note absolute top-0 left-0 text-yellow-400 opacity-0"><i class="fa fa-music"></i></div>
+        <div class="note absolute top-0 left-0 text-yellow-400 opacity-0"><i class="fa fa-music"></i></div>
+        <div class="note absolute top-0 left-0 text-yellow-400 opacity-0"><i class="fa fa-music"></i></div>
+    </div>
+
+    <!-- 初始界面 -->
+    <div id="initial-screen" class="flex flex-col items-center justify-center flex-1 transition-opacity duration-1000">
+        <h1 id="greeting" class="text-2xl md:text-3xl font-handwritten text-black mb-8 text-shadow"></h1>
+        <div id="envelope-icon" class="w-48 h-48 cursor-pointer animate-swing flex items-center justify-center">
+            <img src="word.png" alt="信封" class="w-full h-auto object-contain">
+        </div>
+    </div>
+
+    <!-- 内容界面 -->
+    <div id="content-screen" class="flex flex-col items-center justify-center flex-1 opacity-0 pointer-events-none transition-opacity duration-1000">
+        <div class="max-w-md w-full mx-4 p-8 bg-white bg-opacity-90 rounded-lg shadow-lg transform -translate-y-1/4">
+            <div id="letter-content" class="font-handwritten text-black text-lg md:text-xl leading-relaxed whitespace-pre-wrap"></div>
+        </div>
+    </div>
+
+    <!-- 音乐元素 -->
+    <audio id="background-music" src="music.mp3" loop>
+        Your browser does not support the audio element.
+    </audio>
+
+    <!-- JavaScript -->
+    <script>
+        // 元素引用
+        const initialScreen = document.getElementById('initial-screen');
+        const contentScreen = document.getElementById('content-screen');
+        const envelopeIcon = document.getElementById('envelope-icon');
+        const greeting = document.getElementById('greeting');
+        const letterContent = document.getElementById('letter-content');
+        const recordContainer = document.getElementById('record-container');
+        const record = document.getElementById('record');
+        const backgroundMusic = document.getElementById('background-music');
+        const notes = document.querySelectorAll('.note');
+
+        // 逐字浮现动画函数
+        function typeWriter(element, text, speed = 100) {
+            let i = 0;
+            // 初始状态为隐藏
+            element.innerHTML = '';
+            element.style.opacity = '0';
+            
+            // 开始动画前显示元素
+            setTimeout(() => {
+                element.style.opacity = '1';
+                element.style.transition = 'opacity 0.5s ease-in-out';
+                
+                function type() {
+                    if (i < text.length) {
+                        element.innerHTML += text.charAt(i);
+                        i++;
+                        setTimeout(type, speed);
+                    }
+                }
+                type();
+            }, 300);
+        }
+
+        // 初始化问候语
+        window.onload = function() {
+            // 逐字显示问候语
+            typeWriter(greeting, '收到一封来信', 150);
+            
+            // 自动播放音乐
+            backgroundMusic.play().catch(e => {
+                console.log('音乐播放失败:', e);
+            });
+            
+            // 播放音符动画
+            playNotesAnimation();
+        };
+
+        // 音符动画
+        function playNotesAnimation() {
+            if (!backgroundMusic.paused) {
+                notes.forEach((note, index) => {
+                    setTimeout(() => {
+                        note.style.opacity = '1';
+                        note.style.transform = `translate(-${Math.random() * 100 + 50}px, -${Math.random() * 100 + 50}px)`;
+                        note.style.transition = 'all 1s ease-out';
+                        
+                        setTimeout(() => {
+                            note.style.opacity = '0';
+                            note.style.transform = 'translate(0, 0)';
+                        }, 1000);
+                    }, index * 500);
+                });
+                
+                // 循环播放
+                setTimeout(playNotesAnimation, 2000);
+            }
+        }
+
+        // 切换屏幕
+        function switchScreen() {
+            initialScreen.style.opacity = '0';
+            setTimeout(() => {
+                initialScreen.style.pointerEvents = 'none';
+                contentScreen.style.opacity = '1';
+                contentScreen.style.pointerEvents = 'auto';
+                
+                // 加载信件内容
+                loadLetterContent();
+            }, 1000);
+        }
+
+        // 加载信件内容
+        function loadLetterContent() {
+            fetch('信件内容.txt')
+                .then(response => response.text())
+                .then(text => {
+                    typeWriter(letterContent, text, 50);
+                })
+                .catch(error => {
+                    console.error('读取文件失败:', error);
+                    letterContent.innerHTML = '读取信件内容失败';
+                });
+        }
+
+        // 控制音乐
+        recordContainer.addEventListener('click', function() {
+            if (backgroundMusic.paused) {
+                backgroundMusic.play().catch(e => {
+                    console.log('音乐播放失败:', e);
+                });
+                record.classList.add('animate-spin-slow');
+                playNotesAnimation();
+            } else {
+                backgroundMusic.pause();
+                record.classList.remove('animate-spin-slow');
+            }
+        });
+
+        // 点击信封打开内容
+        envelopeIcon.addEventListener('click', switchScreen);
+    </script>
+</body>
+</html>
