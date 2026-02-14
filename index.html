@@ -192,11 +192,9 @@
                 backgroundMusic.play().catch(e => {
                     console.log('音乐播放失败:', e);
                 });
-                record.classList.add('animate-spin-slow');
                 playNotesAnimation();
             } else {
                 backgroundMusic.pause();
-                record.classList.remove('animate-spin-slow');
             }
         });
 
